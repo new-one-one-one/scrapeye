@@ -1,0 +1,30 @@
+{
+  "name": "scrapeye",
+  "version": "1.0.0",
+  "description": "a scrapper that facilitates to scrape finger print data from creepjs websites",
+  "main": "index.js",
+  "scripts": {
+    "test": "node run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/new-one-one-one/scrapeye.git"
+  },
+  "keywords": [
+    "scrapper",
+    "puppeteer",
+    "express"
+  ],
+  "author": "piyushohri",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/new-one-one-one/scrapeye/issues"
+  },
+  "homepage": "https://github.com/new-one-one-one/scrapeye#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "puppeteer": "^21.4.1"
+  }
+}
