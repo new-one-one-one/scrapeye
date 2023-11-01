@@ -37,12 +37,12 @@ const puppeteer = require('puppeteer');
         const fpIDElement = fingerprintHeader.querySelector('div.ellipsis-all');
 
         if (fpIDElement) {
-        const text = fpIDElement.textContent.trim();
-        const match = text.match(/FP ID: ([0-9a-f]+)/i);
+            const text = fpIDElement.textContent.trim();
+            const match = text.match(/FP ID: ([0-9a-f]+)/i);
 
-        if (match) {
-            return match[1];
-        }
+            if (match) {
+                return match[1];
+            }
         }
 
         return null;
@@ -70,19 +70,19 @@ const puppeteer = require('puppeteer');
     const firstColSixDivSection = await page.evaluate(() => {
         const colSixElement = document.querySelector('.col-six');
         if (colSixElement) {
-        const contentElements = colSixElement.querySelectorAll('div');
-        const result = {};
+            const contentElements = colSixElement.querySelectorAll('div');
+            const result = {};
 
-        contentElements.forEach((element) => {
-            const key = element.innerText.split(':')[0].trim();
-            const valueElement = element.querySelector('span.unblurred');
-            if (valueElement) {
-            const value = valueElement.innerText.trim();
-            result[key] = value;
-            }
-        });
+            contentElements.forEach((element) => {
+                const key = element.innerText.split(':')[0].trim();
+                const valueElement = element.querySelector('span.unblurred');
+                if (valueElement) {
+                    const value = valueElement.innerText.trim();
+                    result[key] = value;
+                }
+            });
 
-        return result;
+            return result;
         }
         return null;
     });
@@ -112,7 +112,7 @@ const puppeteer = require('puppeteer');
 
     if (secondColSixDiv) {
         const lies = await secondColSixDiv.$eval('.lies', async (liesDiv) => {
-        return liesDiv.querySelector('label[for="toggle-open-creep-lies"]').textContent;
+            return liesDiv.querySelector('label[for="toggle-open-creep-lies"]').textContent;
         });
         finalResult.lies = lies;
     }
@@ -126,10 +126,10 @@ const puppeteer = require('puppeteer');
         const blockData = {};
 
         lines.forEach(line => {
-        const indexOfSeparator = line.indexOf(":");
-        const key = line.substring(0, indexOfSeparator).trim();
-        const value = line.substring(indexOfSeparator + 1).trim();
-        blockData[key] = value;
+            const indexOfSeparator = line.indexOf(":");
+            const key = line.substring(0, indexOfSeparator).trim();
+            const value = line.substring(indexOfSeparator + 1).trim();
+            blockData[key] = value;
         });
 
         finalResult.bot = blockData["bot"];
@@ -137,12 +137,18 @@ const puppeteer = require('puppeteer');
         console.log("Element with class 'block-text' not found inside the last 'div' element.");
     }
 
-    // Output the finalResult object.
+    // Consoling the finalResult object.
     console.log({ finalResult });
+
+    const jsonFilePath = `finalResult.json`; // Define the JSON file path
+
+    // Save finalResult as a JSON file
+    fs.writeFileSync(jsonFilePath, JSON.stringify(finalResult, null, 2));
+
     await page.pdf({
-        path: 'output.pdf', // Set the file path where you want to save the PDF.
-        format: 'A4', // You can change the page format as needed.
-      });
+        path: 'pagePdf.pdf', 
+        format: 'A4', 
+    });
   
     await browser.close();
 })();
