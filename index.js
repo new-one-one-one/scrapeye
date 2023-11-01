@@ -92,7 +92,7 @@ const puppeteer = require('puppeteer');
 
 
     /**
-     * Approach 1:
+     * Approach 2:
      *    Use pure puppetee for evaluation and selection to find the class selector and then perform scraping.
      * Pros:
      *    Efficient and to the point selection
@@ -139,8 +139,11 @@ const puppeteer = require('puppeteer');
 
     // Output the finalResult object.
     console.log({ finalResult });
-
-   
+    await page.pdf({
+        path: 'output.pdf', // Set the file path where you want to save the PDF.
+        format: 'A4', // You can change the page format as needed.
+      });
+  
     await browser.close();
 })();
 
