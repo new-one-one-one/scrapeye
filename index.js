@@ -19,8 +19,19 @@ const puppeteer = require('puppeteer');
     const page = await browser.newPage();
 
     await page.goto(process.env.SCRAPPING_SITE_LINK);
+   
+    // Wait for the page to load completely (we can adjust the timeout as needed).
     await page.waitForTimeout(10000);
 
+    // Initializing the result object to store the required scraped data.
+    const finalResult = {
+        fingerprintID: "",
+        trust_score: "",
+        lies: "",
+        bot: ""
+    };
+
+    // Scrape the FP ID from the page.
     const fpID = await page.evaluate(() => {
         const fingerprintHeader = document.querySelector('.fingerprint-header');
         const fpIDElement = fingerprintHeader.querySelector('div.ellipsis-all');
@@ -37,13 +48,26 @@ const puppeteer = require('puppeteer');
         return null;
     });
 
+    finalResult.fingerprintID = fpID;
+
     if (fpID) {
         console.log(`FP ID: ${fpID}`);
     } else {
         console.log('FP ID not found.');
     }
 
-    const data = await page.evaluate(() => {
+    /**
+     * Approach 1:
+     *    Use document to find the class selector and then perform scraping.
+     * Pros:
+     *    Easy to understand and use 
+     * Cons: 
+     *   Heavy from performance perspective
+     * 
+     * Our aim:
+     * To find out the trust score data from the visitor-info element.
+     */
+    const firstColSixDivSection = await page.evaluate(() => {
         const colSixElement = document.querySelector('.col-six');
         if (colSixElement) {
         const contentElements = colSixElement.querySelectorAll('div');
@@ -63,12 +87,60 @@ const puppeteer = require('puppeteer');
         return null;
     });
 
-    if (data) {
-        console.log(JSON.stringify(data, null, 2));
-    } else {
-        console.log('Data not found.');
+    finalResult.trust_score = firstColSixDivSection["trust score"];
+
+
+
+    /**
+     * Approach 1:
+     *    Use pure puppetee for evaluation and selection to find the class selector and then perform scraping.
+     * Pros:
+     *    Efficient and to the point selection
+     *    Cna do generalization
+     * Cons: 
+     *   difficult to adapt
+     * 
+     * Our aim:
+     * To find out the trust score data from the visitor-info element from second column
+     */
+
+    const visitorInfoDiv = await page.$('.visitor-info');
+
+    const flexGridRelative = await visitorInfoDiv.$('.flex-grid.relative');
+    const colSixDivs = await flexGridRelative.$$('div.col-six');
+    const secondColSixDiv = colSixDivs[1];
+
+    if (secondColSixDiv) {
+        const lies = await secondColSixDiv.$eval('.lies', async (liesDiv) => {
+        return liesDiv.querySelector('label[for="toggle-open-creep-lies"]').textContent;
+        });
+        finalResult.lies = lies;
     }
 
+    const lastDivInsideSecondColSix = colSixDivs[colSixDivs.length - 1];
+    const blockTextElement = await lastDivInsideSecondColSix.$('.block-text');
+
+    if (blockTextElement) {
+        const textContent = await blockTextElement.evaluate(element => element.textContent.trim());
+        const lines = textContent.split('\n');
+        const blockData = {};
+
+        lines.forEach(line => {
+        const indexOfSeparator = line.indexOf(":");
+        const key = line.substring(0, indexOfSeparator).trim();
+        const value = line.substring(indexOfSeparator + 1).trim();
+        blockData[key] = value;
+        });
+
+        finalResult.bot = blockData["bot"];
+    } else {
+        console.log("Element with class 'block-text' not found inside the last 'div' element.");
+    }
+
+    // Output the finalResult object.
+    console.log({ finalResult });
+
+   
     await browser.close();
 })();
 
